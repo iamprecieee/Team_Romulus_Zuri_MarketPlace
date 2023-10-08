@@ -1,3 +1,5 @@
+from django.contrib.auth.models import User  # Import User model
+from .models import UserProfile, UserProductInteraction, Product
 from django.test import TestCase
 
 # Create your tests here.
@@ -23,13 +25,11 @@ class TestGetAllProductsBasedOnCategory(TestCase):
 
         self.test_category1 = ProductCategory.objects.create(
             name="Sample Category 1",
-            # parent_category = 1,
             status="approved"
         )
 
         self.test_category2 = ProductCategory.objects.create(
             name="Sample Category 2",
-            # parent_category = 2,
             status="approved"
         )
 
@@ -62,7 +62,8 @@ class TestGetAllProductsBasedOnCategory(TestCase):
         )
 
     def test_get_all_products_by_category(self):
-        url = reverse("get_all_products_by_categories", args=[self.test_category1])
+        url = reverse("get_all_products_by_categories",
+                      args=[self.test_category1])
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertNotEqual(len(response.data), None)
@@ -71,7 +72,8 @@ class TestGetAllProductsBasedOnCategory(TestCase):
         print(response.data)
 
     def test_get_empty_products_list_by_category(self):
-        url = reverse("get_all_products_by_categories", args=[self.test_category2])
+        url = reverse("get_all_products_by_categories",
+                      args=[self.test_category2])
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -110,9 +112,12 @@ class ProductListAPITestCase(TestCase):
         )
         self.subcategory1 = 'ebook'
         self.subcategory2 = 'mobile_app'
-        self.category_obj = ProductCategory.objects.create(name='digital services', status='approved')
-        self.subcategory_obj_1 = ProductCategory.objects.create(name=self.subcategory1, shop_id=self.test_shop, parent_category_id=self.category_obj.id)
-        self.subcategory_obj_2 = ProductCategory.objects.create(name=self.subcategory1, shop_id=self.test_shop, parent_category_id=self.category_obj.id)
+        self.category_obj = ProductCategory.objects.create(
+            name='digital services', status='approved')
+        self.subcategory_obj_1 = ProductCategory.objects.create(
+            name=self.subcategory1, shop_id=self.test_shop, parent_category_id=self.category_obj.id)
+        self.subcategory_obj_2 = ProductCategory.objects.create(
+            name=self.subcategory1, shop_id=self.test_shop, parent_category_id=self.category_obj.id)
 
         self.product1 = Product.objects.create(shop_id=1, name='Product_1', description='Product_1 description', quantity=10,
                                                category=self.subcategory_obj_1, price=1000.00, discount_price=100.00, tax=50.00, is_published=True, currency='Naira')
@@ -121,8 +126,10 @@ class ProductListAPITestCase(TestCase):
 
     def test_list_products_sorted_by_price(self):
         # url = self.client.get(f'/api/products/category/{self.subcategory}')
-        url2 = reverse('get_products_by_subcategories', args={'category': self.category_obj, 'subcategory': self.subcategory})  # args=[self.subcategory.id=1]
-        response = self.client.get(url2, format='json', data={'ordering': 'price'})
+        url2 = reverse('get_products_by_subcategories', args={
+                       'category': self.category_obj, 'subcategory': self.subcategory})  # args=[self.subcategory.id=1]
+        response = self.client.get(
+            url2, format='json', data={'ordering': 'price'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # To confirm that the response is ordered by price
         self.assertTrue(response.data[0], self.product1)
@@ -130,8 +137,10 @@ class ProductListAPITestCase(TestCase):
         # self.assertEqual(response.data, serializer.data)
 
     def test_list_products_sorted_by_name(self):
-        url = reverse('get_products_by_subcategories', args={'category': self.category_obj, 'subcategory': self.subcategory1})  # , args=[self.subcategory.id=1]
-        response = self.client.get(url, format='json', data={'ordering': 'name'})
+        url = reverse('get_products_by_subcategories', args={
+                      'category': self.category_obj, 'subcategory': self.subcategory1})  # , args=[self.subcategory.id=1]
+        response = self.client.get(
+            url, format='json', data={'ordering': 'name'})
         serializer = ProductSerializer(self.product2)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, serializer.data)
@@ -139,14 +148,16 @@ class ProductListAPITestCase(TestCase):
         self.assertTrue(response.data[0], self.product1)
 
     def test_list_products_empty_subcategory(self):
-        url = reverse('get_products_by_subcategories', args={'category': self.category_obj, 'subcategory': self.subcategory2})
+        url = reverse('get_products_by_subcategories', args={
+                      'category': self.category_obj, 'subcategory': self.subcategory2})
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 0)
         print(response.data)
 
     def test_list_nonexistent_category(self):
-        url = reverse('get_products_by_subcategories', args={'category': self.category_obj, 'subcategory': 'Non existent subcategory'})
+        url = reverse('get_products_by_subcategories', args={
+                      'category': self.category_obj, 'subcategory': 'Non existent subcategory'})
         response = self.client.get(url, format('json'))
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
@@ -155,35 +166,36 @@ class ProductListAPITestCase(TestCase):
         self.subcategory_obj_1.delete()
         self.subcategory_obj_2.delete()
 
-from django.test import TestCase
-from django.urls import reverse
-from rest_framework import status
-from rest_framework.test import APIClient
-from .models import UserProfile, UserProductInteraction, Product
-
-from django.contrib.auth.models import User  # Import User model
 
 class RecommendationAPITest(TestCase):
     def setUp(self):
         # Create test users
-        self.user1 = User.objects.create_user(username='user1', password='password1')
-        self.user2 = User.objects.create_user(username='user2', password='password2')
+        self.user1 = User.objects.create_user(
+            username='user1', password='password1')
+        self.user2 = User.objects.create_user(
+            username='user2', password='password2')
 
         # Create user profiles for test users
         UserProfile.objects.create(user=self.user1, age=25, gender='male')
         UserProfile.objects.create(user=self.user2, age=30, gender='female')
 
         # Create test products
-        self.product1 = Product.objects.create(name='Product 1', description='Description of Product 1', category='Electronics', price=499.99)
-        self.product2 = Product.objects.create(name='Product 2', description='Description of Product 2', category='Clothing', price=39.99)
-        self.product3 = Product.objects.create(name='Product 3', description='Description of Product 3', category='Electronics', price=799.99)
+        self.product1 = Product.objects.create(
+            name='Product 1', description='Description of Product 1', category='Electronics', price=499.99)
+        self.product2 = Product.objects.create(
+            name='Product 2', description='Description of Product 2', category='Clothing', price=39.99)
+        self.product3 = Product.objects.create(
+            name='Product 3', description='Description of Product 3', category='Electronics', price=799.99)
 
         # Create test user-product interactions
-        UserProductInteraction.objects.create(user=self.user1, product=self.product1, interaction_type='viewed')
-        UserProductInteraction.objects.create(user=self.user1, product=self.product2, interaction_type='purchased')
-        UserProductInteraction.objects.create(user=self.user2, product=self.product1, interaction_type='viewed')
-        UserProductInteraction.objects.create(user=self.user2, product=self.product3, interaction_type='viewed')
-
+        UserProductInteraction.objects.create(
+            user=self.user1, product=self.product1, interaction_type='viewed')
+        UserProductInteraction.objects.create(
+            user=self.user1, product=self.product2, interaction_type='purchased')
+        UserProductInteraction.objects.create(
+            user=self.user2, product=self.product1, interaction_type='viewed')
+        UserProductInteraction.objects.create(
+            user=self.user2, product=self.product3, interaction_type='viewed')
 
     def test_recommendations_endpoint(self):
         # Test the recommendations/<int:user_id>/ endpoint
@@ -203,7 +215,8 @@ class RecommendationAPITest(TestCase):
 
     def test_invalid_user_id(self):
         # Test the recommendations/<int:user_id>/ endpoint with an invalid user_id
-        url = reverse('recommendations', args=[999])  # Assuming user with ID 999 doesn't exist
+        # Assuming user with ID 999 doesn't exist
+        url = reverse('recommendations', args=[999])
         client = APIClient()
         response = client.get(url)
 
