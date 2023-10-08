@@ -62,7 +62,7 @@ class TestGetAllProductsBasedOnCategory(TestCase):
         )
 
     def test_get_all_products_by_category(self):
-        url = reverse("get_products_by_categories", args=[self.test_category1])
+        url = reverse("get_all_products_by_categories", args=[self.test_category1])
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertNotEqual(len(response.data), None)
@@ -71,7 +71,7 @@ class TestGetAllProductsBasedOnCategory(TestCase):
         print(response.data)
 
     def test_get_empty_products_list_by_category(self):
-        url = reverse("get_products_by_categories", args=[self.test_category2])
+        url = reverse("get_all_products_by_categories", args=[self.test_category2])
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -80,7 +80,7 @@ class TestGetAllProductsBasedOnCategory(TestCase):
 
     def test_return_404_for_nonexistent_category(self):
         nonexistent_category = "NonExistentCategory"
-        url = reverse("get_products_by_categories",
+        url = reverse("get_all_products_by_categories",
                       args=[nonexistent_category])
         response = self.client.get(url)
 
